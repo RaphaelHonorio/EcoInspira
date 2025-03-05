@@ -7,7 +7,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import com.example.ecoinspira.R
 
-// --== Tema de cores do ticket
+// --== Tema de cores do EcoInspira
 data class EcoThemeColors(
     // --== Cores neutras
     val black00: Color = Color(0xFF000000),

@@ -30,7 +30,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -40,7 +40,7 @@
 
 
         <activity
-            android:name=".views.screens.public.EcoLoginScreen"
+            android:name=".views.screens.public.EcoTesteScreen"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.EcoInspira">

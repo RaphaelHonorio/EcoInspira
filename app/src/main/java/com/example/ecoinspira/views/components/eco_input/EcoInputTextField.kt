@@ -48,7 +48,7 @@ import com.example.ecoinspira.views.components.eco_typography.EcoTypography
 
 
 @Composable
-fun TicketMinimalTextField(
+fun EcoMinimalTextField(
     // --== Configurações do textField
     refValue: MutableState<String>,
     onValueChange: ((String) -> Unit) ?= { x -> refValue.value = x },
@@ -94,20 +94,20 @@ fun TicketMinimalTextField(
     wrapperBorderRadius : Dp?= 8.dp
 ) {
     // -- Iniciando estilização
-    var styledTicketInputTextField = Modifier
+    var styledEcoInputTextField = Modifier
         .wrapContentSize()
         .padding(margin!!)
     // -- Verificando se deve ocupar toda a largura
     fullWidth?.let {
-        if (fullWidth == true) styledTicketInputTextField =
-            styledTicketInputTextField.fillMaxWidth()
+        if (fullWidth == true) styledEcoInputTextField =
+            styledEcoInputTextField.fillMaxWidth()
     }
     // --== Adicionando demais estilos
-    width?.let { styledTicketInputTextField = styledTicketInputTextField.width(width) }
-    height?.let { styledTicketInputTextField = styledTicketInputTextField.height(height) }
+    width?.let { styledEcoInputTextField = styledEcoInputTextField.width(width) }
+    height?.let { styledEcoInputTextField = styledEcoInputTextField.height(height) }
     borderColor?.let { color ->
         borderSize?.let { size ->
-            styledTicketInputTextField = styledTicketInputTextField.border(
+            styledEcoInputTextField = styledEcoInputTextField.border(
                 BorderStroke(size, color),
             )
         }

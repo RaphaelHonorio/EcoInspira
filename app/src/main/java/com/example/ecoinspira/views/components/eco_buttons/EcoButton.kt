@@ -44,9 +44,9 @@ fun EcoSimpleButton(
     borderSize: Dp? = 10.dp,
 ) {
 
-    var styledTicketButton = Modifier.wrapContentSize()
+    var styledEcoButton = Modifier.wrapContentSize()
 
-    fullWidth?.let { if (fullWidth == true) styledTicketButton = styledTicketButton.fillMaxWidth() }
+    fullWidth?.let { if (fullWidth == true) styledEcoButton = styledEcoButton.fillMaxWidth() }
 
     Column(
         Modifier
