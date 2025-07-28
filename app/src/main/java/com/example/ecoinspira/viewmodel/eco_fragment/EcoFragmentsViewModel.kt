@@ -12,7 +12,7 @@ import com.example.ecoinspira.config.screen.loginFragmentConfig
 import com.example.ecoinspira.config.screen.offsetNavbarVisivel
 import com.example.ecoinspira.config.screen.offsetTopBarVisivel
 
-class EcoFragmentsViewModel() : ViewModel() {
+class EcoFragmentsViewModel : ViewModel() {
 
     // --== Referência da tela atual
     private val telaAnterior = mutableStateOf<EcoFragmentsNavigation?>(null)

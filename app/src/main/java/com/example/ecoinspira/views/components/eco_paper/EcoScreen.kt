@@ -1,7 +1,6 @@
 package com.example.ecoinspira.views.components.eco_paper
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -25,8 +24,6 @@ import com.example.ecoainspira.config.theme.theme
 import com.example.ecoinspira.config.screen.offsetNavbarVisivel
 import com.example.ecoinspira.config.screen.offsetTopBarVisivel
 import com.example.ecoinspira.viewmodel.eco_fragment.EcoFragmentsViewModel
-import com.example.ecoinspira.views.components.eco_navbar.EcoNavbar
-
 
 // --== Composição para facilitar padronização de opções de tela
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -49,8 +46,7 @@ fun EcoScreen(
             0.dp
         }, label = "",
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessLow
+            dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow
         )
     )
 
@@ -78,9 +74,6 @@ fun EcoScreen(
         }
 
 
-
-        EcoNavbar(viewModel)
-
     }
 }
 
@@ -100,16 +93,4 @@ fun EcoMargin(
         // -- Chamando o filho caso exista
         children?.invoke()
     }
-}
-
-// -- Espaçamento de linha
-@Composable
-fun EcoLineSpace(size: Dp) {
-    Spacer(modifier = Modifier.height(size))
-}
-
-// -- Espaçamento de coluna
-@Composable
-fun EcoColumnSpace(size: Dp) {
-    Spacer(modifier = Modifier.width(size))
 }

@@ -18,7 +18,7 @@ import com.example.ecoainspira.config.theme.theme
 fun EcoTypography(
     text : String,
     lineHeight: TextUnit = 20.sp,
-    size : TextUnit?= 10.sp,
+    size : TextUnit?= 12.sp,
     weight: FontWeight?= FontWeight.Normal,
     padding: PaddingValues? = PaddingValues(0.dp),
     color : Color = theme.colors.black00,

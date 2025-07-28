@@ -11,9 +11,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class EcoLoginScreen : EcoActivity() {
 
-
     private val _fragmentMainViewModel: EcoFragmentsViewModel by viewModel()
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,8 +21,7 @@ class EcoLoginScreen : EcoActivity() {
 
             EcoScreen(viewModel = _fragmentMainViewModel) {
 
-
-
+                loginFragment()
 
             }
         }

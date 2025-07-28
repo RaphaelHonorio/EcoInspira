@@ -1,4 +1,4 @@
-package com.example.ecoainspira.views.components.eco_buttons
+package com.example.ecoinspira.views.components.eco_buttons
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -33,8 +33,8 @@ fun EcoSimpleButton(
     textSize: TextUnit? = 15.sp,
     fullWidth: Boolean? = null,
     textWeight: FontWeight? = FontWeight.W700,
-    backgroundColor: Color? = theme.colors.primary01,
-    backgroundColorDegrade: Color? = theme.colors.primary02,
+    backgroundColor: Color? = theme.colors.logo,
+    backgroundColorDegrade: Color? = theme.colors.logo,
     borderRadius: Dp? = 90.dp,
     height: Dp? = 48.dp,
     widthFloat: Float? = 1f,
@@ -54,10 +54,7 @@ fun EcoSimpleButton(
             .border(borderSize!!, borderColor!!, shape = RoundedCornerShape(90.dp))
             .background(
                 Brush.horizontalGradient(
-                    colors = listOf(
-                        backgroundColor!!,
-                        backgroundColorDegrade!!
-                    )
+                    colors = listOf(backgroundColor!!, backgroundColorDegrade!!)
                 )
             )
             .height(height!!)

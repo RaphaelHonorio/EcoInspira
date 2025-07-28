@@ -27,6 +27,7 @@ data class EcoThemeColors(
 
     // --== Cor primária
     val primary01: Color = Color(0xFFD3F41F),
+    val logo: Color = Color(0xFF71FF55),
     val primary02: Color = Color(0xFFB1D100),
     val primary03: Color = Color(0xFF92AD10),
     val darkPrimary: Color = Color(0xFF4D5B00),
