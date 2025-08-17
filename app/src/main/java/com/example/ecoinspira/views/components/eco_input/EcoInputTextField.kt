@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -66,7 +68,7 @@ fun EcoMinimalTextField(
     xTextLocation: Dp?= 17.dp,
     // --== Placeholder
     placeholder: String ?= "",
-    placeholderSize : TextUnit?= 14.sp,
+    placeholderSize : TextUnit?= 18.sp,
     paddingPlaceholder : Dp?= 17.dp,
     paddingPlaceholderBottom : Dp?= 0.dp,
     // --== Ação para trocar de um input para outro
@@ -167,5 +169,6 @@ fun EcoMinimalTextField(
             Row {
                EcoTypography(text = errorMessage!!, color = theme.colors.statusErro) }
         }
+        Spacer(Modifier.size(8.dp))
     }
 }

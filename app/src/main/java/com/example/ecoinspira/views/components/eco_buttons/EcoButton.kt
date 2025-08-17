@@ -35,7 +35,7 @@ fun EcoSimpleButton(
     textWeight: FontWeight? = FontWeight.W700,
     backgroundColor: Color? = theme.colors.logo,
     backgroundColorDegrade: Color? = theme.colors.logo,
-    borderRadius: Dp? = 90.dp,
+    borderRadius: Dp? = 8.dp,
     height: Dp? = 48.dp,
     widthFloat: Float? = 1f,
     color: Color? = theme.colors.black01,
@@ -51,7 +51,7 @@ fun EcoSimpleButton(
     Column(
         Modifier
             .clip(RoundedCornerShape(borderRadius!!))
-            .border(borderSize!!, borderColor!!, shape = RoundedCornerShape(90.dp))
+            .border(borderSize!!, borderColor!!, shape = RoundedCornerShape(45.dp))
             .background(
                 Brush.horizontalGradient(
                     colors = listOf(backgroundColor!!, backgroundColorDegrade!!)

@@ -6,10 +6,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 class EcoFragmentSliderView(
     val offSet: MutableState<Float> = mutableFloatStateOf(offsetEscondidoADireita),
     val targetOffSet: MutableState<Float> = mutableFloatStateOf(offsetEscondidoADireita),
-    var title: String? = null,
-    var desc: String? = null,
-    var onCancel: (() -> Unit)? = null,
-) {
+    ) {
 
     fun passar() {
         this.offSet.value = offsetVisivel
@@ -20,12 +17,6 @@ class EcoFragmentSliderView(
     fun trazer() {
         this.offSet.value = offsetEscondidoADireita
         this.targetOffSet.value = offsetVisivel
-    }
-
-    fun atualizar(title: String, desc: String, onCancel: (() -> Unit)?) {
-        this.desc = desc
-        this.title = title
-        this.onCancel = onCancel
     }
 
     val estaVisivel: Boolean get() = targetOffSet.value == offsetVisivel

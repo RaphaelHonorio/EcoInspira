@@ -40,13 +40,11 @@ class EcoFragmentsViewModel : ViewModel() {
     )
 
     fun verLogin() {
-
         fecharNavbar()
         fecharTopbar()
         alterarEscopoDeVisualizacao(EcoFragmentsNavigationScope.Login)
         marcarComoAnterior(EcoFragmentsNavigation.Login)
         fecharTodosEAbrir(EcoFragmentsNavigation.Login)
-
     }
 
 
@@ -97,22 +95,6 @@ class EcoFragmentsViewModel : ViewModel() {
         telaAnterior.value = alvo
     }
 
-    fun voltar(onBackLimit: () -> Unit) {
-        if (this.telaAnterior.value == null)
-            onBackLimit()
-        else voltar()
-    }
-
-    private fun voltar() {
-        when (this.telaAnterior.value) {
-            EcoFragmentsNavigation.Login -> verLogin()
-            EcoFragmentsNavigation.Cadastro -> verLogin()
-
-            else -> {}
-        }
-    }
-
-
 
     val topbarView = MutableLiveData(EcoTopbarSliderView())
 
@@ -124,20 +106,10 @@ class EcoFragmentsViewModel : ViewModel() {
     }
 
     fun fecharNavbar() = navBarView.value?.mandarPraBaixo()
-    fun abrirNavbar() {
-        navBarView.value?.targetOffSet?.value?.let {
-            if (it != offsetNavbarVisivel)
-                navBarView.value?.puxarPraCima()
-        }
-    }
+
 
     fun fecharTopbar() = topbarView.value?.mandarPraCima()
-    fun abrirTopbar() {
-        topbarView.value?.targetOffSet?.value?.let {
-            if (it != offsetTopBarVisivel)
-                topbarView.value?.puxarPraBaixo()
-        }
-    }
+
 }
 
 

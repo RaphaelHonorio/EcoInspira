@@ -6,12 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import com.example.ecoinspira.extensions.activity.EcoActivity
 import com.example.ecoinspira.viewmodel.eco_fragment.EcoFragmentsViewModel
+import com.example.ecoinspira.viewmodel.user.EcoUserViewModel
 import com.example.ecoinspira.views.components.eco_paper.EcoScreen
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class EcoLoginScreen : EcoActivity() {
 
     private val _fragmentMainViewModel: EcoFragmentsViewModel by viewModel()
+    private val _fragmentUserViewModel: EcoUserViewModel by viewModel()
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,7 +23,7 @@ class EcoLoginScreen : EcoActivity() {
 
             EcoScreen(viewModel = _fragmentMainViewModel) {
 
-                loginFragment()
+                LoginFragment(userViewModel = _fragmentUserViewModel)
 
             }
         }
