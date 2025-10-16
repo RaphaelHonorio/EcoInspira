@@ -6,11 +6,14 @@ import androidx.lifecycle.ViewModel
 import com.example.ecoinspira.config.screen.EcoFragmentConfig
 import com.example.ecoinspira.config.screen.EcoFragmentSliderView
 import com.example.ecoinspira.config.screen.EcoNavbarSliderView
-import com.example.ecoinspira.config.screen.EcoTopbarSliderView
-import com.example.ecoinspira.config.screen.cadastroProdutoFragmentConfig
+import com.example.ecoinspira.config.screen.cadastroFragmentConfig
+import com.example.ecoinspira.config.screen.configFragmentConfig
+import com.example.ecoinspira.config.screen.feedFragmentConfig
+import com.example.ecoinspira.config.screen.friendsFragmentConfig
 import com.example.ecoinspira.config.screen.loginFragmentConfig
 import com.example.ecoinspira.config.screen.offsetNavbarVisivel
-import com.example.ecoinspira.config.screen.offsetTopBarVisivel
+import com.example.ecoinspira.config.screen.perfilFragmentConfig
+
 
 class EcoFragmentsViewModel : ViewModel() {
 
@@ -26,6 +29,18 @@ class EcoFragmentsViewModel : ViewModel() {
     // --== Manipulador da tela (Fragmento) de Cadastro
     val cadastroFragmentView = MutableLiveData(EcoFragmentSliderView())
 
+    // --== Manipulador da tela (Fragmento) de feed
+    val feedFragmentView = MutableLiveData(EcoFragmentSliderView())
+
+    // --== Manipulador da tela (Fragmento) de perfil
+    val perfilFragmentView = MutableLiveData(EcoFragmentSliderView())
+
+    // --== Manipulador da tela (Fragmento) de Configurações
+    val configFragmentView = MutableLiveData(EcoFragmentSliderView())
+
+    // --== Manipulador da tela (Fragmento) de analise de imagens
+    val analysisFragmentView = MutableLiveData(EcoFragmentSliderView())
+
     // --== Manipulador da tela (Fragmento) de Testes
     val testeFragmentView = MutableLiveData(EcoFragmentSliderView())
 
@@ -36,15 +51,41 @@ class EcoFragmentsViewModel : ViewModel() {
     private val refFragmentViewMap = mapOf(
         EcoFragmentsNavigation.Login to loginFragmentView,
         EcoFragmentsNavigation.Cadastro to cadastroFragmentView,
-        EcoFragmentsNavigation.Testes to testeFragmentView
+        EcoFragmentsNavigation.Testes to testeFragmentView,
+        EcoFragmentsNavigation.Feed to feedFragmentView,
+        EcoFragmentsNavigation.Perfil to perfilFragmentView,
+        EcoFragmentsNavigation.Config to configFragmentView,
+        EcoFragmentsNavigation.Analysis to analysisFragmentView,
     )
 
     fun verLogin() {
         fecharNavbar()
-        fecharTopbar()
         alterarEscopoDeVisualizacao(EcoFragmentsNavigationScope.Login)
         marcarComoAnterior(EcoFragmentsNavigation.Login)
         fecharTodosEAbrir(EcoFragmentsNavigation.Login)
+    }
+
+    fun verFeed(){
+        abrirNavbar()
+        alterarEscopoDeVisualizacao(EcoFragmentsNavigationScope.Main)
+        fecharTodosEAbrir(EcoFragmentsNavigation.Feed)
+    }
+
+    fun verPerfil(){
+        abrirNavbar()
+        alterarEscopoDeVisualizacao(EcoFragmentsNavigationScope.Main)
+        fecharTodosEAbrir(EcoFragmentsNavigation.Perfil)
+        marcarComoAnterior(EcoFragmentsNavigation.Login)
+    }
+
+    fun verConfig(){
+        abrirNavbar()
+        fecharTodosEAbrir(EcoFragmentsNavigation.Config)
+    }
+
+    fun verAnalysis(){
+        abrirNavbar()
+        fecharTodosEAbrir(EcoFragmentsNavigation.Analysis)
     }
 
 
@@ -68,24 +109,16 @@ class EcoFragmentsViewModel : ViewModel() {
         }
     }
 
-    private fun fecharTodos() {
-
-        // --== Mapeando e alterando visibilidade
-        refFragmentViewMap.map { (_, fragmentControllerView) ->
-            fragmentControllerView.value?.let { fragment ->
-
-                // --== Caso esteja visível, então fechar
-                if (fragment.estaVisivel)
-                    fragmentControllerView.value?.passar()
-            }
-        }
-    }
-
     private fun dadosDaTela(tela: EcoFragmentsNavigation): EcoFragmentConfig {
         return when (tela) {
 
             EcoFragmentsNavigation.Login -> loginFragmentConfig
-            EcoFragmentsNavigation.Cadastro -> cadastroProdutoFragmentConfig
+            EcoFragmentsNavigation.Cadastro -> cadastroFragmentConfig
+            EcoFragmentsNavigation.Feed -> feedFragmentConfig
+            EcoFragmentsNavigation.Perfil -> perfilFragmentConfig
+            EcoFragmentsNavigation.Config -> configFragmentConfig
+            EcoFragmentsNavigation.Analysis -> friendsFragmentConfig
+
 
             else -> loginFragmentConfig
         }
@@ -95,9 +128,6 @@ class EcoFragmentsViewModel : ViewModel() {
         telaAnterior.value = alvo
     }
 
-
-    val topbarView = MutableLiveData(EcoTopbarSliderView())
-
     val navBarView = MutableLiveData(EcoNavbarSliderView())
 
     private fun alterarEscopoDeVisualizacao(scope: EcoFragmentsNavigationScope) {
@@ -106,20 +136,22 @@ class EcoFragmentsViewModel : ViewModel() {
     }
 
     fun fecharNavbar() = navBarView.value?.mandarPraBaixo()
-
-
-    fun fecharTopbar() = topbarView.value?.mandarPraCima()
-
+    fun abrirNavbar() {
+        navBarView.value?.targetOffSet?.value?.let {
+            if (it != offsetNavbarVisivel)
+                navBarView.value?.puxarPraCima()
+        }
+    }
 }
 
 
 
 
 enum class EcoFragmentsNavigation {
-    Login, Cadastro, Testes
+    Login, Cadastro, Testes, Feed, Perfil, Config, Analysis
 }
 
 enum class EcoFragmentsNavigationScope {
-    Login, Testes
+    Login, Testes, Main
 }
 

@@ -22,21 +22,6 @@ class EcoFragmentSliderView(
     val estaVisivel: Boolean get() = targetOffSet.value == offsetVisivel
 }
 
-data class EcoTopbarSliderView(
-    val offSet: MutableState<Float> = mutableFloatStateOf(offsetTopBarEscondidoPraCima),
-    val targetOffSet: MutableState<Float> = mutableFloatStateOf(offsetTopBarEscondidoPraCima),
-) {
-    fun mandarPraCima() {
-        this.offSet.value = offsetTopBarVisivel
-        this.targetOffSet.value = offsetTopBarEscondidoPraCima
-    }
-
-    fun puxarPraBaixo() {
-        this.offSet.value = offsetTopBarEscondidoPraCima
-        this.targetOffSet.value = offsetTopBarVisivel
-    }
-}
-
 data class EcoNavbarSliderView(
     val offSet: MutableState<Float> = mutableFloatStateOf(offsetNavbarEscondidoPraBaixo),
     val targetOffSet: MutableState<Float> = mutableFloatStateOf(offsetNavbarEscondidoPraBaixo),
@@ -61,14 +46,8 @@ const val offsetEscondidoADireita = 500f
 // --== Valor de referência para conteúdo visível
 const val offsetVisivel = 0f
 
-// --==
-const val offsetTopBarEscondidoPraCima = -70f
-
-// --== Valor de referência para conteúdo visível de topbar
-const val offsetTopBarVisivel = 0f
-
 // --
-const val offsetNavbarEscondidoPraBaixo = 700f
+const val offsetNavbarEscondidoPraBaixo = 1730f
 
 // --== Valor de referência para conteúdo visível de navbar
-const val offsetNavbarVisivel = 565f
+const val offsetNavbarVisivel = 730f

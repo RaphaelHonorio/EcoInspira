@@ -3,6 +3,7 @@ package com.example.ecoinspira.services.httpclient
 import android.content.Context
 import com.example.ecoinspira.models.http.HttpResponseMessage
 import okhttp3.OkHttpClient
+import java.io.File
 import java.lang.reflect.Type
 
 // --== Camada de integração
@@ -66,6 +67,27 @@ class HttpClient(
     ): HttpResponseMessage<D> {
         return _httpClientFactory.deleteFactoryAsync(context = context, authorize = auth!!,
             requester = _client, dataType = dataType, path = "$baseUrl/$path"
+        )
+    }
+
+    // POST MULTIPART (para upload de imagem)
+    suspend fun <D> postMultipartAsync(
+        context: Context,
+        path: String,
+        fields: Map<String, String>,
+        fileField: String,
+        file: File,
+        dataType: Type,
+        auth: Boolean? = false
+    ): HttpResponseMessage<D> {
+        return _httpClientFactory.postMultipartAsync(
+            context = context,
+            path = "$baseUrl/$path",
+            fields = fields,
+            fileField = fileField,
+            file = file,
+            dataType = dataType,
+            auth = auth ?: false
         )
     }
 }

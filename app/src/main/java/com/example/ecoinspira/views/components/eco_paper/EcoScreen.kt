@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.ecoainspira.config.theme.theme
 import com.example.ecoinspira.config.screen.offsetNavbarVisivel
-import com.example.ecoinspira.config.screen.offsetTopBarVisivel
 import com.example.ecoinspira.viewmodel.eco_fragment.EcoFragmentsViewModel
+import com.example.ecoinspira.views.components.eco_navbar.EcoNavbar
 
 // --== Composição para facilitar padronização de opções de tela
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -39,16 +39,6 @@ fun EcoScreen(
     // --== Informações da tela atual
     val telaAtual = viewModel.telaAtual.observeAsState()
 
-    val topPadding by animateDpAsState(
-        if (viewModel.topbarView.value?.targetOffSet?.value == offsetTopBarVisivel) {
-            70.dp
-        } else {
-            0.dp
-        }, label = "",
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow
-        )
-    )
 
     val bottomPadding by animateDpAsState(
         if (viewModel.navBarView.value?.targetOffSet?.value == offsetNavbarVisivel) {
@@ -69,10 +59,11 @@ fun EcoScreen(
             .background(color = backgroundColor!!)
     ) {
 
-        Column(modifier = Modifier.padding(top = topPadding, bottom = bottomPadding)) {
+        Column(modifier = Modifier.padding(bottom = bottomPadding)) {
             children?.invoke()
         }
 
+        EcoNavbar(viewModel)
 
     }
 }

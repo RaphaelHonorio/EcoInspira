@@ -9,5 +9,11 @@ interface IEcoUserService {
         context: Context,
         model: EcoUserModel,
         options: EcoAPICallback<EcoUserModel>
-        )
+    )
+
+    suspend fun logar(
+        context: Context,
+        model: EcoUserModel,
+        options: EcoAPICallback<EcoUserModel>
+    )
 }

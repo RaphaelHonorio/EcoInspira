@@ -17,4 +17,12 @@ class EcoUserService : IEcoUserService {
     ) {
         _httpClient.postAsync<EcoUserModel>(context = context, path = "user", payload = model, auth = false, EcoUserModel::class.java).serializeAndResolve(options)
     }
+
+    override suspend fun logar(
+        context: Context,
+        model: EcoUserModel,
+        options: EcoAPICallback<EcoUserModel>
+    ) {
+        _httpClient.postAsync<EcoUserModel>(context = context, path = "login", payload = model, auth = false, EcoUserModel::class.java).serializeAndResolve(options)
+    }
 }

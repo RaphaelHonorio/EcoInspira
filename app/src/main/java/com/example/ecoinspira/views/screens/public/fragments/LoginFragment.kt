@@ -1,12 +1,10 @@
-package com.example.ecoinspira.views.screens.public
+package com.example.ecoinspira.views.screens.public.fragments
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,9 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -38,28 +32,40 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ecoainspira.config.theme.theme
+import com.example.ecoinspira.config.keys.EcoMemoChunks
+import com.example.ecoinspira.config.keys.EcoMemoKeys
+import com.example.ecoinspira.config.others.cpfVisualTransformation
+import com.example.ecoinspira.config.others.isValidCPF
+import com.example.ecoinspira.extensions.navigation.EcoScreens
+import com.example.ecoinspira.extensions.navigation.navigate
+import com.example.ecoinspira.extensions.utils.ecoSnackbar
 import com.example.ecoinspira.models.http.EcoAPICallback
+import com.example.ecoinspira.services.generate.IEcoGenerateService
+import com.example.ecoinspira.services.memo.IEcoMemo
 import com.example.ecoinspira.services.user.IEcoUserService
+import com.example.ecoinspira.viewmodel.generate.EcoGenerateViewModel
 import com.example.ecoinspira.viewmodel.user.EcoUserViewModel
 import com.example.ecoinspira.views.components.eco_buttons.EcoCheckbox
 import com.example.ecoinspira.views.components.eco_buttons.EcoSimpleButton
 import com.example.ecoinspira.views.components.eco_input.EcoMinimalTextField
 import com.example.ecoinspira.views.components.eco_paper.EcoMargin
 import com.example.ecoinspira.views.components.eco_typography.EcoTypography
+import com.example.ecoinspira.views.screens.public.EcoMainScreen
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
 
-
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun LoginFragment(
-    userViewModel: EcoUserViewModel
+    userViewModel: EcoUserViewModel,
+    memoService: IEcoMemo
 ) {
+
+
     var estado by remember { mutableStateOf(false) }
 
     var email = mutableStateOf("")
@@ -82,7 +88,6 @@ fun LoginFragment(
 
 
     // --== REALIZANDO O CADASTRO ==-- \\
-
     val userService: IEcoUserService = get()
     val context = LocalContext.current
 
@@ -92,14 +97,64 @@ fun LoginFragment(
                 context = context,
                 model = userViewModel.getUserFormValues(),
                 options = EcoAPICallback(
-                    onSucess = {},
+                    onSucess = {user ->
+
+                        user.tokens?.accessToken?.let {
+                            memoService.save(
+                                context, EcoMemoKeys.token, it,
+                                EcoMemoChunks().identidade
+                            )
+                        }
+
+                        user.name?.let {
+                            memoService.save(context, EcoMemoKeys.nome,
+                                it, EcoMemoChunks().identidade)
+                        }
+
+                        ecoSnackbar(context, "Cadastro feito com sucesso", color = android.graphics.Color.CYAN)
+                        context.navigate(EcoScreens.Main)
+                    },
                     onFailure = { error ->
                         println(error)
+                        ecoSnackbar(context, error)
                     }
                 )
             )
         }
     }
+
+    fun handleLoginSubmit() {
+        GlobalScope.launch {
+            userService.logar(
+                context = context,
+                model = userViewModel.getUserFormValues(),
+                options = EcoAPICallback(
+                    onSucess = {user ->
+
+                        user.tokens?.accessToken?.let {
+                            memoService.save(
+                                context, EcoMemoKeys.token, it,
+                                EcoMemoChunks().identidade
+                            )
+                        }
+
+
+
+                        ecoSnackbar(context, "Login Feito com sucesso", color = android.graphics.Color.CYAN)
+                        context.navigate(EcoScreens.Main)
+
+                    },
+                    onFailure = { error ->
+                        println(error)
+                        ecoSnackbar(context, error)
+                    }
+                )
+            )
+        }
+    }
+
+
+
 
 
     var lembrar by remember { mutableStateOf(false) }
@@ -151,9 +206,15 @@ fun LoginFragment(
                         Spacer(Modifier.size(16.dp))
 
 
-                        EcoMinimalTextField(email, placeholder = "Email")
+                        EcoMinimalTextField(cpf, placeholder = "Cpf", onValueChange = {
+                            cpf.value = it
+                            userViewModel.cpf = it
+                        })
                         Spacer(Modifier.size(8.dp))
-                        EcoMinimalTextField(senha, placeholder = "senha")
+                        EcoMinimalTextField(senha, placeholder = "senha", onValueChange = {
+                            senha.value = it
+                            userViewModel.password = it
+                        })
 
                         Spacer(Modifier.size(16.dp))
 
@@ -174,9 +235,9 @@ fun LoginFragment(
 
 
                         EcoSimpleButton(onClick = {
-                            estado = !estado
-                            println(estado)
+                            handleLoginSubmit()
                         }, text = "Login")
+
 
                         Spacer(Modifier.size(8.dp))
 
@@ -270,70 +331,9 @@ fun LoginFragment(
                         println(estado)
                         handleSubmit()
                     }, text = "Cadastro")
+
                 }
             }
         }
-    }
-}
-
-
-fun isValidCPF(cpf: String): Boolean {
-    val cleanCPF = cpf.replace(Regex("[^\\d]"), "")
-    if (cleanCPF.length != 11 || cleanCPF.all { it == cleanCPF[0] }) return false
-
-    fun calcDigit(cpf: String, factor: Int): Int {
-        var sum = 0
-        var weight = factor
-        for (char in cpf) {
-            sum += (char.toString().toInt() * weight--)
-        }
-        val remainder = sum % 11
-        return if (remainder < 2) 0 else 11 - remainder
-    }
-
-    val digit1 = calcDigit(cleanCPF.substring(0, 9), 10)
-    val digit2 = calcDigit(cleanCPF.substring(0, 9) + digit1, 11)
-
-    return cleanCPF == cleanCPF.substring(0, 9) + digit1.toString() + digit2.toString()
-}
-
-fun cpfVisualTransformation(): VisualTransformation = object : VisualTransformation {
-    override fun filter(text: AnnotatedString): TransformedText {
-        // Garante só dígitos e no máximo 11
-        val digits = text.text.filter(Char::isDigit).take(11)
-
-        // Monta "xxx.xxx.xxx-xx" (sem separador pendurado)
-        val masked = buildString {
-            for (i in digits.indices) {
-                append(digits[i])
-                when (i) {
-                    2 -> if (digits.length > 3) append('.')
-                    5 -> if (digits.length > 6) append('.')
-                    8 -> if (digits.length > 9) append('-')
-                }
-            }
-        }
-
-        val hasSep1 = digits.length > 3   // ponto após 3º dígito
-        val hasSep2 = digits.length > 6   // ponto após 6º dígito
-        val hasSep3 = digits.length > 9   // hífen após 9º dígito
-
-        val mapping = object : OffsetMapping {
-            override fun originalToTransformed(offset: Int): Int {
-                var o = offset
-                if (hasSep1 && offset > 3) o += 1
-                if (hasSep2 && offset > 6) o += 1
-                if (hasSep3 && offset > 9) o += 1
-                return o
-            }
-            override fun transformedToOriginal(offset: Int): Int {
-                var t = offset
-                if (hasSep1 && t > 3) t -= 1
-                if (hasSep2 && t > 7) t -= 1
-                if (hasSep3 && t > 11) t -= 1
-                return t.coerceIn(0, digits.length)
-            }
-        }
-        return TransformedText(AnnotatedString(masked), mapping)
     }
 }

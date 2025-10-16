@@ -5,10 +5,7 @@ package com.example.ecoinspira.config.keys
 class EcoMemoKeys private constructor() {
     companion object {
         const val token: String = "UIDREFTOKEN"
-        const val modalidade: String = "TERMINALCONFIG"
-        const val modalidadesPagamento: String = "TERMINALCONFIGPAGAMENTO"
-        const val modoTerminalAtivacao: String = "MDATIVATERMINAL-"
-        const val terminalId: String = "TERMIDLOCAL-"
+        const val nome: String = "USERNAME"
     }
 }
 
@@ -21,5 +18,3 @@ data class EcoMemoChunks(
     val config: String = "CONFIGTERMINAL",
     val modalidadesPagamento: String = "MODALIDADESPAGAMENTO"
 )
-
-val EcoMemoChunksData = EcoMemoChunks()

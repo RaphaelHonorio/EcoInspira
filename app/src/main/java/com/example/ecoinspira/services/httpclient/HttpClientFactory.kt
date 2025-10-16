@@ -8,6 +8,7 @@ import com.example.ecoinspira.models.http.HttpResponseMessage
 import com.example.ecoinspira.models.http.ValidationProblemDetails
 
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -15,11 +16,14 @@ import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
+import java.io.File
 import java.io.IOException
 import java.lang.reflect.Type
 import java.security.SecureRandom
@@ -89,6 +93,42 @@ class HttpClientFactory(
         return@withContext sendAsync(
             request = authHandler(authorize, context, requestMessage),
             dataType = dataType, authorize = authorize, context = context, requester = requester
+        )
+    }
+
+    suspend fun <D> postMultipartAsync(
+        context: Context,
+        path: String,
+        fields: Map<String, String>,
+        fileField: String,
+        file: File,
+        dataType: Type,
+        auth: Boolean = false
+    ): HttpResponseMessage<D> = withContext(Dispatchers.IO) {
+        val requestBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
+
+        // Adiciona os campos de texto
+        for ((key, value) in fields) {
+            requestBodyBuilder.addFormDataPart(key, value)
+        }
+
+        // Adiciona o arquivo (caso exista)
+        requestBodyBuilder.addFormDataPart(
+            name = fileField,
+            filename = file.name,
+            body = file.asRequestBody("image/*".toMediaTypeOrNull())
+        )
+
+        val requestMessage = Request.Builder()
+            .url(path)
+            .post(requestBodyBuilder.build())
+
+        return@withContext sendAsync(
+            request = authHandler(auth, context, requestMessage),
+            dataType = dataType,
+            authorize = auth,
+            context = context,
+            requester = createClient()
         )
     }
 
@@ -206,13 +246,34 @@ class HttpClientFactory(
         response: Response,
         continuation: Continuation<HttpResponseMessage<D>>,
     ) {
-        val trace = _serializer.fromJson(
-            response.body.string()
-            , ValidationProblemDetails::class.java
-        )
+        val bodyString = response.body.string()
+        var trace: ValidationProblemDetails? = null
+        var problemMessage = SERVER_ERROR_MESSAGE
 
-        val httpResponseMessage = buildHttpResponse<D>(null, response.code, false, trace,
-            trace?.errors?.values?.flatMap { it.toList() }?.firstOrNull()
+        try {
+            trace = _serializer.fromJson(bodyString, ValidationProblemDetails::class.java)
+            problemMessage = trace?.errors?.values
+                ?.flatMap { it.toList() }
+                ?.firstOrNull()
+                ?: trace?.detail
+                        ?: trace?.title
+                        ?: problemMessage
+        } catch (e: Exception) {
+            // se não conseguir parsear, tenta ler uma mensagem simples
+            problemMessage = try {
+                JsonParser.parseString(bodyString)
+                    .asJsonObject["errors"]?.asString ?: bodyString
+            } catch (_: Exception) {
+                bodyString
+            }
+        }
+
+        val httpResponseMessage = buildHttpResponse<D>(
+            data = null,
+            code = response.code,
+            success = false,
+            trace = trace,
+            stack = problemMessage
         )
 
         continuation.resumeWith(Result.success(httpResponseMessage))
