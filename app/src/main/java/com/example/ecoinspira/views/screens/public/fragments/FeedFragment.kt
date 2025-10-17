@@ -22,8 +22,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Send
@@ -36,6 +36,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -48,57 +50,65 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.example.ecoainspira.config.theme.theme
 import com.example.ecoinspira.R
+import com.example.ecoinspira.models.http.EcoAPICallback
+import com.example.ecoinspira.models.post.EcoPostModel
+import com.example.ecoinspira.services.post.IEcoPostService
 import com.example.ecoinspira.viewmodel.eco_fragment.EcoFragmentsViewModel
 import com.example.ecoinspira.viewmodel.fragment.EcoFragmentSlider
-import com.example.ecoinspira.viewmodel.user.EcoUserViewModel
 import com.example.ecoinspira.views.components.eco_icons.EcoIcon
 import com.example.ecoinspira.views.components.eco_typography.EcoTypography
-
+import org.koin.androidx.compose.get
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun FeedFragment(
-    userViewModel: EcoUserViewModel,
     fragmentMainViewModel: EcoFragmentsViewModel
 ) {
 
+    val context = LocalContext.current
+
+    val posts = remember { mutableStateOf<List<EcoPostModel>>(emptyList()) }
+    val isLoading = remember { mutableStateOf(true) }
+
+    val postService: IEcoPostService = get()
+
+    LaunchedEffect(Unit) {
+        postService.getAllPosts(
+            context = context,
+            options = EcoAPICallback(
+                onSucess = { response ->
+                    // response agora é do tipo GetPostResponse
+                    posts.value = response.post
+                    isLoading.value = false
+                },
+                onFailure = { error ->
+                    isLoading.value = false
+                    println("Erro ao buscar posts: $error")
+                }
+            )
+        )
+    }
+
     EcoFragmentSlider(form = fragmentMainViewModel.feedFragmentView.observeAsState()) {
 
-        EcoFeedScreen()
+        EcoFeedScreen(posts)
+
     }
 }
 
 
-
 @Composable
-fun EcoFeedScreen() {
-    // Lista de posts fake (pode vir de API ou banco depois)
-    val posts = listOf(
-        EcoPost(
-            imageRes = R.drawable.img,
-            likes = 120,
-            comments = 45,
-            favorites = 10,
-            username = "eco_user",
-            userAvatar = R.drawable.avatarmota
-        ),
-        EcoPost(
-            imageRes = R.drawable.img2,
-            likes = 300,
-            comments = 90,
-            favorites = 42,
-            username = "green_life",
-            userAvatar = R.drawable.avatarerick
-        )
-    )
+fun EcoFeedScreen(posts: MutableState<List<EcoPostModel>>) {
 
-    val pagerState = rememberPagerState { posts.size }
+    val pagerState = rememberPagerState { posts.value.size }
 
     VerticalPager(
         state = pagerState,
@@ -107,16 +117,16 @@ fun EcoFeedScreen() {
             .background(theme.colors.white)
     ) { page ->
 
-        EcoPostItem(post = posts[page])
+        EcoPostItem(post = posts.value[page])
     }
 }
 
 @Composable
-fun EcoPostItem(post: EcoPost) {
+fun EcoPostItem(post: EcoPostModel) {
     var showComments by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        EcoFeedImage(imageRes = post.imageRes)
+        post.imageUrl?.let { EcoFeedImage(url = it) }
 
         Box(
             modifier = Modifier
@@ -124,18 +134,31 @@ fun EcoPostItem(post: EcoPost) {
 
         ) {
             EcoTypography(
-                text = "@${post.username}",
+                text = "@${post.userName}",
                 size = 16.sp,
                 color = theme.colors.white,
                 weight = FontWeight.SemiBold,
                 padding = PaddingValues(12.dp)
             )
 
+            Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.fillMaxSize()) {
+
+
+                EcoTypography(
+                    text = "@${post.title}",
+                    size = 16.sp,
+                    color = theme.colors.black01,
+                    weight = FontWeight.SemiBold,
+                    padding = PaddingValues(12.dp)
+                )
+            }
+
+
             EcoSideActions(
                 modifier = Modifier.align(Alignment.BottomEnd),
-                likes = post.likes,
-                comments = post.comments,
-                avatarRes = post.userAvatar,
+                likes = post.likesCount.toInt(),
+                comments = post.commentsCount.toInt(),
+                avatarRes = R.drawable.avatarmota,
                 onCommentsClick = { showComments = true }
             )
         }
@@ -150,20 +173,21 @@ fun EcoPostItem(post: EcoPost) {
 }
 
 
-
-
 @Composable
-fun EcoFeedImage(imageRes: Int) {
+fun EcoFeedImage(url: String) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxSize()
     ) {
         Image(
-            painter = painterResource(id = imageRes),
+            // painter = painterResource(id = imageRes),
+            painter = rememberAsyncImagePainter(url),
             contentDescription = "Feed Image",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+
+
     }
 }
 
@@ -241,7 +265,6 @@ data class EcoComment(
 )
 
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommentsBottomSheet(
@@ -299,6 +322,7 @@ fun CommentsBottomSheet(
         }
     }
 }
+
 @Composable
 fun CommentItem(comment: EcoComment) {
     Row(
@@ -330,26 +354,77 @@ fun CommentItem(comment: EcoComment) {
 }
 
 
-
 fun demoComments() = listOf(
-    EcoComment("Matheus Mota Caldas", R.drawable.avatarmota, "Caraca mano ficou muito legal esse vaso de flor"),
-    EcoComment("Vinícius Gimines Sapienza", R.drawable.avatarvinicius, "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."),
+    EcoComment(
+        "Matheus Mota Caldas",
+        R.drawable.avatarmota,
+        "Caraca mano ficou muito legal esse vaso de flor"
+    ),
+    EcoComment(
+        "Vinícius Gimines Sapienza",
+        R.drawable.avatarvinicius,
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
+    ),
     EcoComment("Raphael", R.drawable.avatarraphael, "Gostei muito dessa ideia, parabéns!"),
-    EcoComment("Matheus Mota Caldas", R.drawable.avatarmota, "Caraca mano ficou muito legal esse vaso de flor"),
-    EcoComment("Vinícius Gimines Sapienza", R.drawable.avatarvinicius, "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."),
+    EcoComment(
+        "Matheus Mota Caldas",
+        R.drawable.avatarmota,
+        "Caraca mano ficou muito legal esse vaso de flor"
+    ),
+    EcoComment(
+        "Vinícius Gimines Sapienza",
+        R.drawable.avatarvinicius,
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
+    ),
     EcoComment("Raphael", R.drawable.avatarraphael, "Gostei muito dessa ideia, parabéns!"),
-    EcoComment("Matheus Mota Caldas", R.drawable.avatarmota, "Caraca mano ficou muito legal esse vaso de flor"),
-    EcoComment("Vinícius Gimines Sapienza", R.drawable.avatarvinicius, "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."),
+    EcoComment(
+        "Matheus Mota Caldas",
+        R.drawable.avatarmota,
+        "Caraca mano ficou muito legal esse vaso de flor"
+    ),
+    EcoComment(
+        "Vinícius Gimines Sapienza",
+        R.drawable.avatarvinicius,
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
+    ),
     EcoComment("Raphael", R.drawable.avatarraphael, "Gostei muito dessa ideia, parabéns!"),
-    EcoComment("Matheus Mota Caldas", R.drawable.avatarmota, "Caraca mano ficou muito legal esse vaso de flor"),
-    EcoComment("Vinícius Gimines Sapienza", R.drawable.avatarvinicius, "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."),
+    EcoComment(
+        "Matheus Mota Caldas",
+        R.drawable.avatarmota,
+        "Caraca mano ficou muito legal esse vaso de flor"
+    ),
+    EcoComment(
+        "Vinícius Gimines Sapienza",
+        R.drawable.avatarvinicius,
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
+    ),
     EcoComment("Raphael", R.drawable.avatarraphael, "Gostei muito dessa ideia, parabéns!"),
-    EcoComment("Matheus Mota Caldas", R.drawable.avatarmota, "Caraca mano ficou muito legal esse vaso de flor"),
-    EcoComment("Vinícius Gimines Sapienza", R.drawable.avatarvinicius, "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."),
+    EcoComment(
+        "Matheus Mota Caldas",
+        R.drawable.avatarmota,
+        "Caraca mano ficou muito legal esse vaso de flor"
+    ),
+    EcoComment(
+        "Vinícius Gimines Sapienza",
+        R.drawable.avatarvinicius,
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
+    ),
     EcoComment("Raphael", R.drawable.avatarraphael, "Gostei muito dessa ideia, parabéns!"),
-    EcoComment("Matheus Mota Caldas", R.drawable.avatarmota, "Caraca mano ficou muito legal esse vaso de flor"),
-    EcoComment("Vinícius Gimines Sapienza", R.drawable.avatarvinicius, "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."),
+    EcoComment(
+        "Matheus Mota Caldas",
+        R.drawable.avatarmota,
+        "Caraca mano ficou muito legal esse vaso de flor"
+    ),
+    EcoComment(
+        "Vinícius Gimines Sapienza",
+        R.drawable.avatarvinicius,
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
+    ),
     EcoComment("Raphael", R.drawable.avatarraphael, "Gostei muito dessa ideia, parabéns!"),
-    EcoComment("Marcos Ribeiro", R.drawable.avatarmarcos, "Lorem ipsum dolor sit amet, consectetur adipiscing elit...")
+    EcoComment(
+        "Marcos Ribeiro",
+        R.drawable.avatarmarcos,
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
+    )
 
 )

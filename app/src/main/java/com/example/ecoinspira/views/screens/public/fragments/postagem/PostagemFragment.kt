@@ -3,10 +3,7 @@ package com.example.ecoinspira.views.screens.public.fragments.postagem
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -35,10 +32,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.example.ecoainspira.config.theme.theme
-import com.example.ecoinspira.R
 import com.example.ecoinspira.config.mock.EcoGenerateMock.mockPassos
 import com.example.ecoinspira.config.mock.EcoGenerateMock.mockResultado
 import com.example.ecoinspira.models.generate.EcoGenerateModel
@@ -61,14 +57,10 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.koin.androidx.compose.get
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
-@OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun PostagemFragment(
@@ -77,7 +69,6 @@ fun PostagemFragment(
 ) {
     val context = LocalContext.current
     val generateService: IEcoGenerateService = get()
-    val postService: IEcoPostService = get()
 
     val materialInput = remember { mutableStateOf("") }
     val selectedOption = remember { mutableStateOf<String?>(null) }
@@ -86,84 +77,13 @@ fun PostagemFragment(
     val passosResultado = remember { mutableStateOf<EcoGenerateStepsModel?>(null) }
 
     // mocks
-    val mockResultado = mockResultado()
-    val mockPassos = mockPassos()
+    //val mockResultado = mockResultado()
+    //val mockPassos = mockPassos()
 
-    val currentScreen = remember { mutableStateOf("analise") } // "analise" ou "passos"
-
-    val cameraPermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
-
-    // --- Cria arquivo temporário para câmera
-    fun createTempFile(): File {
-        return File(context.cacheDir, "photo_${System.currentTimeMillis()}.jpg")
-    }
-
-    // --- Converte Uri para File
-    fun uriToFile(uri: Uri, context: Context): File {
-        val inputStream = context.contentResolver.openInputStream(uri)!!
-        val file = File(context.cacheDir, "temp_${System.currentTimeMillis()}.jpg")
-        val outputStream = FileOutputStream(file)
-        inputStream.copyTo(outputStream)
-        outputStream.close()
-        inputStream.close()
-        return file
-    }
-
-    val post = EcoPostModel(
-        title = "Meu post casdfasdfom imagem",
-        description = "Testasdfasdfando upload multipart",
-        likesCount = 20,
-        commentsCount = 20
-    )
-
-    // --- Função que chama o serviço de upload
-    fun handleUploadPost(file: File) {
-
-        GlobalScope.launch {
-            postService.uploadPost(
-                context = context,
-                post = post,
-                imageFile = file,
-                options = EcoAPICallback(
-                    onSucess = { response ->
-                    },
-                    onFailure = { error ->
-                    }
-                )
-            )
-        }
-    }
-
-    // --- URI da imagem capturada
-    val imageUri = remember { mutableStateOf<Uri?>(null) }
-
-    // --- Launcher para capturar foto
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
-    ) { success ->
-        if (success) {
-            imageUri.value?.let { uri ->
-                // converte Uri para File
-                val file = uriToFile(uri, context)
-                // envia para o backend
-                handleUploadPost(file)
-            }
-        }
-    }
-
-    // --- Botão para abrir câmera
-    fun takePhoto() {
-        val photoFile = createTempFile()
-        imageUri.value = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            photoFile
-        )
-        launcher.launch(imageUri.value)
-    }
+    val currentScreen = remember { mutableStateOf("analise") }
 
     // --- Handle gerar análise
-    fun handleSubmit() {
+    fun handleGerarAnalise() {
         GlobalScope.launch {
             generateService.gerar(
                 context = context,
@@ -186,7 +106,7 @@ fun PostagemFragment(
     }
 
     // --- Handle gerar passos
-    fun handleSubmit2() {
+    fun handleGerarPasos() {
         val request = EcoGenerateStepsModel(
             material = materialInput.value,
             objeto = selectedOption.value ?: ""
@@ -209,8 +129,12 @@ fun PostagemFragment(
         }
     }
 
-    EcoMargin {
-        EcoFragmentSlider(form = fragmentMainViewModel.analysisFragmentView.observeAsState()) {
+
+    EcoFragmentSlider(form = fragmentMainViewModel.analysisFragmentView.observeAsState()) {
+        EcoMargin(marginTop = 24.dp) {
+
+            EcoTypography(text = "TESTE DE ANALISE DE OBJETO CHAT GPT", size = 14.sp)
+
 
             // campo de texto
             EcoMinimalTextField(
@@ -223,29 +147,28 @@ fun PostagemFragment(
                 }
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                EcoSimpleButton("Tirar Foto e Enviar", onClick = {
-                    if (cameraPermissionState.status.isGranted) {
-                        takePhoto()
-                    } else {
-                        cameraPermissionState.launchPermissionRequest()
-                    } })
-                EcoSimpleButton("Gerar Passos", onClick = { handleSubmit2() })
-            }
+            EcoSimpleButton("Gerar Analise", onClick = { handleGerarAnalise() })
+
+            EcoSimpleButton("Gerar Passos", onClick = { handleGerarPasos() })
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Column(modifier = Modifier.fillMaxHeight(0.9f).verticalScroll(rememberScrollState())) {
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight(0.9f)
+                    .verticalScroll(rememberScrollState())
+            ) {
 
                 when (currentScreen.value) {
                     "analise" -> AnaliseMaterialSection(
-                        resultado = mockResultado,
+                        resultado = resultado.value,
                         selectedOption = selectedOption,
                         onAvancar = { currentScreen.value = "passos" }
                     )
 
                     "passos" -> PassosReciclagemSection(
-                        passosData = mockPassos,
+                        passosData = passosResultado.value,
                         onVoltar = { currentScreen.value = "analise" }
                     )
                 }
@@ -253,6 +176,8 @@ fun PostagemFragment(
         }
     }
 }
+
+
 @Composable
 fun AnaliseMaterialSection(
     resultado: EcoGenerateModel?,
@@ -302,7 +227,6 @@ fun PassosReciclagemSection(
         EcoSimpleButton("Continuar", onClick = onVoltar)
     }
 }
-
 
 
 @Composable
@@ -365,5 +289,3 @@ fun PassoItem(passo: Passo) {
         }
     }
 }
-
-

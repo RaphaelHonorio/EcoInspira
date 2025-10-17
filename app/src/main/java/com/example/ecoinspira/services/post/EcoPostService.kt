@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.ecoinspira.extensions.http.serializeAndResolve
 import com.example.ecoinspira.models.http.EcoAPICallback
 import com.example.ecoinspira.models.post.EcoPostModel
+import com.example.ecoinspira.models.post.GetPostResponse
 import com.example.ecoinspira.services.httpclient.HttpClient
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -26,6 +27,7 @@ class EcoPostService : IEcoPostService {
     ) {
         val fields = mapOf(
             "Title" to post.title,
+            "userName" to post.userName.toString(),
             "Description" to post.description,
             "LikesCount" to post.likesCount.toString(),
             "CommentsCount" to post.commentsCount.toString()
@@ -45,13 +47,13 @@ class EcoPostService : IEcoPostService {
 
     override suspend fun getAllPosts(
         context: Context,
-        options: EcoAPICallback<List<EcoPostModel>>
+        options: EcoAPICallback<GetPostResponse>
     ) {
-        _httpClient.getAsync<List<EcoPostModel>>(
+        _httpClient.getAsync<GetPostResponse>(
             context = context,
-            path = "post/upload",
+            path = "post",
             auth = true,
-            dataType = object : TypeToken<List<EcoPostModel>>() {}.type
+            dataType = GetPostResponse::class.java,
         ).serializeAndResolve(options)
     }
 }

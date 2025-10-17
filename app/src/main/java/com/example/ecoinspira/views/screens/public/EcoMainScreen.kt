@@ -43,14 +43,13 @@ class EcoMainScreen : EcoActivity() {
 
                 Box{
 
-                    FeedFragment(_fragmentUserViewModel, _fragmentMainViewModel)
+                    FeedFragment(_fragmentMainViewModel)
 
                     PerfilFragment(_fragmentUserViewModel, _fragmentMainViewModel)
 
-                    ConfigFragment(_fragmentUserViewModel, _fragmentMainViewModel)
+                    ConfigFragment(_fragmentUserViewModel, _fragmentMainViewModel, _memoService)
 
                     PostagemFragment(_fragmentMainViewModel, _generateViewModel)
-
                 }
             }
         }
