@@ -2,23 +2,35 @@ package com.example.ecoinspira.views.screens.public.fragments.postagem
 
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ecoainspira.config.theme.theme
 import com.example.ecoinspira.config.mock.EcoGenerateMock.mockPassos
 import com.example.ecoinspira.config.mock.EcoGenerateMock.mockResultado
 import com.example.ecoinspira.models.generate.EcoGenerateModel
@@ -30,21 +42,21 @@ import com.example.ecoinspira.viewmodel.fragment.EcoFragmentSlider
 import com.example.ecoinspira.viewmodel.generate.EcoGenerateViewModel
 import com.example.ecoinspira.views.components.eco_buttons.EcoMaterialSelectionButton
 import com.example.ecoinspira.views.components.eco_buttons.EcoSimpleButton
+import com.example.ecoinspira.views.components.eco_buttons.EcoVoltarButton
 import com.example.ecoinspira.views.components.eco_input.EcoMinimalTextField
 import com.example.ecoinspira.views.components.eco_paper.EcoMargin
 import com.example.ecoinspira.views.components.eco_passos.PassosReciclagemSection
 import com.example.ecoinspira.views.components.eco_typography.EcoTypography
+import com.example.ecoinspira.views.screens.public.fragments.postagem.steps.Step1
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-fun PostagemFragment(
-    fragmentMainViewModel: EcoFragmentsViewModel,
-    generateViewModel: EcoGenerateViewModel,
-
-    ) {
+fun PostagemFinalFragment(
+    fragmentMainViewModel: EcoFragmentsViewModel, generateViewModel: EcoGenerateViewModel
+) {
     val context = LocalContext.current
     val generateService: IEcoGenerateService = get()
 
@@ -56,6 +68,10 @@ fun PostagemFragment(
 
 
     val currentScreen = remember { mutableStateOf("analise") }
+
+
+    // Controle de carregamento
+    val isLoading = remember { mutableStateOf(false) }
 
     // --- Handle gerar análise
     fun handleGerarAnalise() {
@@ -105,58 +121,44 @@ fun PostagemFragment(
     }
 
 
-    EcoFragmentSlider(form = fragmentMainViewModel.analysisFragmentView.observeAsState()) {
-        EcoMargin(marginTop = 24.dp) {
+    EcoFragmentSlider(form = fragmentMainViewModel.postagemFragmentView.observeAsState()) {
 
-            EcoTypography(text = "TESTE DE ANALISE DE OBJETO CHAT GPT", size = 14.sp)
-
-
-            // campo de texto
-            EcoMinimalTextField(
-                refValue = materialInput,
-                placeholder = "Digite o material",
-                imeAction = ImeAction.Done,
-                onValueChange = {
-                    materialInput.value = it
-                    generateViewModel.material = it
-                }
-            )
-
-
-            Row {
-                EcoSimpleButton("Abrir Camera", fullWidth = false, widthFloat = 0.50f)
-                Spacer(Modifier.width(8.dp))
-                EcoSimpleButton("Abrir Galeria")
-            }
-
-            EcoSimpleButton("Gerar Analise", onClick = { handleGerarAnalise() })
-
-            EcoSimpleButton("Gerar Passos", onClick = { handleGerarPasos() })
-
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight(0.9f)
-                    .verticalScroll(rememberScrollState())
-            ) {
-
-                when (currentScreen.value) {
-                    "analise" -> EcoMaterialSelectionButton(
-                        //resultado = resultado.value,
-                        resultado = mockResultado(),
-                        selectedOption = selectedOption,
-                        onAvancar = { currentScreen.value = "passos" }
+        if (!isLoading.value) {
+            EcoMargin(marginTop = 32.dp, marginBottom = 16.dp) {
+                Column(Modifier.fillMaxWidth(), Arrangement.Center) {
+                    EcoTypography(
+                        text = "Vamos fazer uma Postagem?",
+                        size = 30.sp,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 30.sp,
+                        weight = FontWeight.Bold
                     )
 
-                    "passos" -> PassosReciclagemSection(
-                        passosData = mockPassos(),
-                        //passosData = passosResultado.value,
-                        onVoltar = { currentScreen.value = "analise" }
-                    )
+                    Spacer(modifier = Modifier.height(48.dp))
+
+                    Row {
+                        EcoSimpleButton("Abrir Camera", fullWidth = false, widthFloat = 0.50f)
+                        Spacer(Modifier.width(8.dp))
+                        EcoSimpleButton("Abrir Galeria")
+                    }
+
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        EcoVoltarButton(onClick = { isLoading.value = true })
+                    }
                 }
             }
+        } else {
+            fragmentMainViewModel.iniciarCarregamento(
+                "Fazendo a Analise da Imagem",
+                "Por gentiliza aguarde um pouco enquanto a imagem é analizada"
+            ) { fragmentMainViewModel.pararCarregamento(); isLoading.value = false }
         }
     }
 }

@@ -56,4 +56,21 @@ class EcoPostService : IEcoPostService {
             dataType = GetPostResponse::class.java,
         ).serializeAndResolve(options)
     }
+
+    override suspend fun analyzeImage(
+        context: Context,
+        imageFile: File,
+        options: EcoAPICallback<String>
+    ) {
+        // O endpoint da sua API que faz a análise
+        _httpClient.postMultipartAsync<String>(
+            context = context,
+            path = "post/analyze",
+            fields = emptyMap(), // sem campos extras
+            fileField = "imageFile", // precisa bater com o nome no controller .NET
+            file = imageFile,
+            dataType = String::class.java,
+            auth = true
+        ).serializeAndResolve(options)
+    }
 }

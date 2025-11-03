@@ -51,3 +51,9 @@ val friendsFragmentConfig = EcoFragmentConfig(
     title = "Voltar",
     onBack = { }
 )
+// --== Opções de tela de Cadastro
+val postagemFragmentConfig = EcoFragmentConfig(
+    id = EcoFragmentsNavigation.Postagem,
+    title = "Voltar",
+    onBack = { }
+)

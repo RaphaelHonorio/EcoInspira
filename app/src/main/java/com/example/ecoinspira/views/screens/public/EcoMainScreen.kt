@@ -15,7 +15,9 @@ import com.example.ecoinspira.views.components.eco_paper.EcoScreen
 import com.example.ecoinspira.views.screens.public.fragments.ConfigFragment
 import com.example.ecoinspira.views.screens.public.fragments.FeedFragment
 import com.example.ecoinspira.views.screens.public.fragments.PerfilFragment
+import com.example.ecoinspira.views.screens.public.fragments.postagem.PostagemFinalFragment
 import com.example.ecoinspira.views.screens.public.fragments.postagem.PostagemFragment
+import com.example.ecoinspira.views.screens.public.utils.EcoCarregamentoFragment
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -42,14 +44,20 @@ class EcoMainScreen : EcoActivity() {
 
 
                 Box{
+                    
+                    EcoCarregamentoFragment(viewModel = _fragmentMainViewModel)
 
                     FeedFragment(_fragmentMainViewModel)
 
-                    PerfilFragment(_fragmentUserViewModel, _fragmentMainViewModel)
+                    PerfilFragment(_fragmentUserViewModel, _fragmentMainViewModel,  _memoService)
 
                     ConfigFragment(_fragmentUserViewModel, _fragmentMainViewModel, _memoService)
 
                     PostagemFragment(_fragmentMainViewModel, _generateViewModel)
+
+                    PostagemFinalFragment(_fragmentMainViewModel, _generateViewModel)
+
+
                 }
             }
         }

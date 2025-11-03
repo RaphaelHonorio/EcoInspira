@@ -18,4 +18,10 @@ interface IEcoPostService {
         context: Context,
         options: EcoAPICallback<GetPostResponse>
     )
+
+    suspend fun analyzeImage(
+        context: Context,
+        imageFile: File,
+        options: EcoAPICallback<String>
+    )
 }

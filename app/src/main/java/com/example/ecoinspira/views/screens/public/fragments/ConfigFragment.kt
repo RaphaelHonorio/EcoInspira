@@ -3,6 +3,7 @@ package com.example.ecoinspira.views.screens.public.fragments
 import android.Manifest
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -40,28 +41,25 @@ import java.io.FileOutputStream
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ConfigFragment (
+fun ConfigFragment(
     userViewModel: EcoUserViewModel,
     fragmentMainViewModel: EcoFragmentsViewModel,
     _memoService: IEcoMemo
 ) {
     val context = LocalContext.current
-
     val postService: IEcoPostService = get()
 
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
 
     val Titulo = remember { mutableStateOf("") }
-
     val Descricao = remember { mutableStateOf("") }
-
 
     val post = EcoPostModel(
         title = Titulo.value,
         description = Descricao.value,
         likesCount = 20,
         commentsCount = 20,
-        userName = _memoService.find(context, EcoMemoKeys.nome,EcoMemoChunks().identidade)
+        userName = _memoService.find(context, EcoMemoKeys.nome, EcoMemoChunks().identidade)
     )
 
     // --- Cria arquivo temporário para câmera
@@ -80,10 +78,8 @@ fun ConfigFragment (
         return file
     }
 
-
     // --- Função que chama o serviço de upload
     fun handleUploadPost(file: File) {
-
         GlobalScope.launch {
             postService.uploadPost(
                 context = context,
@@ -91,34 +87,41 @@ fun ConfigFragment (
                 imageFile = file,
                 options = EcoAPICallback(
                     onSucess = { response ->
+                        Log.d("UPLOAD", "Upload bem-sucedido: $response")
                     },
                     onFailure = { error ->
+                        Log.e("UPLOAD", "Erro no upload: $error")
                     }
                 )
             )
         }
     }
 
-
-    // --- URI da imagem capturada
     val imageUri = remember { mutableStateOf<Uri?>(null) }
 
-
-    // --- Launcher para capturar foto
-    val launcher = rememberLauncherForActivityResult(
+    // --- Launcher da câmera
+    val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
             imageUri.value?.let { uri ->
-                // converte Uri para File
                 val file = uriToFile(uri, context)
-                // envia para o backend
                 handleUploadPost(file)
             }
         }
     }
 
-    // --- Botão para abrir câmera
+    // --- Launcher da galeria
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            val file = uriToFile(it, context)
+            handleUploadPost(file)
+        }
+    }
+
+    // --- Abrir câmera
     fun takePhoto() {
         val photoFile = createTempFile()
         imageUri.value = FileProvider.getUriForFile(
@@ -126,49 +129,46 @@ fun ConfigFragment (
             "${context.packageName}.fileprovider",
             photoFile
         )
-        launcher.launch(imageUri.value)
+        cameraLauncher.launch(imageUri.value)
     }
 
-
+    // --- Abrir galeria
+    fun selectFromGallery() {
+        galleryLauncher.launch("image/*")
+    }
 
     EcoFragmentSlider(form = fragmentMainViewModel.configFragmentView.observeAsState()) {
-        
-        
+
         EcoMargin(marginTop = 24.dp) {
-            
-        EcoTypography(text = "Teste de Postagem de Imagem")
-        
-        EcoMinimalTextField(
-            refValue = Titulo,
-            placeholder = "Digite o Titulo",
-            imeAction = ImeAction.Done,
-            onValueChange = {
-                Titulo.value = it
 
-            }
-        )
-        EcoMinimalTextField(
-            refValue = Descricao,
-            placeholder = "Digite a descricao",
-            imeAction = ImeAction.Done,
-            onValueChange = {
-                Descricao.value = it
+            EcoTypography(text = "Teste de Postagem de Imagem")
 
-            }
-        )
+            EcoMinimalTextField(
+                refValue = Titulo,
+                placeholder = "Digite o Título",
+                imeAction = ImeAction.Done,
+                onValueChange = { Titulo.value = it }
+            )
 
-        
+            EcoMinimalTextField(
+                refValue = Descricao,
+                placeholder = "Digite a descrição",
+                imeAction = ImeAction.Done,
+                onValueChange = { Descricao.value = it }
+            )
 
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                EcoSimpleButton("Tirar Foto e Enviar", onClick = {
+                EcoSimpleButton("📷 Tirar Foto", onClick = {
                     if (cameraPermissionState.status.isGranted) {
                         takePhoto()
                     } else {
                         cameraPermissionState.launchPermissionRequest()
-                    } })
+                    }
+                })
 
-            }
+                EcoSimpleButton("🖼️ Escolher da Galeria", onClick = {
+                    selectFromGallery()
+                })
 
         }
     }

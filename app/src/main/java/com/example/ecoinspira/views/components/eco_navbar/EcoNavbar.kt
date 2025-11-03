@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.BottomAppBar
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Home
@@ -34,32 +35,22 @@ import com.example.ecoinspira.viewmodel.fragment.EcoNavbarFragmentSlider
 import com.example.ecoinspira.views.components.eco_typography.EcoTypography
 
 @Composable
-fun EcoNavbar(
-    viewModel: EcoFragmentsViewModel,
-    //  clienteViewModel: TicketClienteViewModel? = null,
-
-) {
+fun EcoNavbar(viewModel: EcoFragmentsViewModel) {
 
     // --== Informações da tela atual
     val tela = viewModel.telaAtual.observeAsState()
-
     // --== Informações de visualização de navbar
     val navbarView = viewModel.navBarView.observeAsState()
 
     EcoNavbarFragmentSlider(navbarView) {
 
-
         Box(Modifier.height(80.dp)) {
-            // --== Barra de notificação inferior
-
-
             Column(
                 Modifier
                     .fillMaxWidth()
                     .height(80.dp), Arrangement.Bottom
             ) {
 
-                // --== Estilo para obter o posicionamento correto
                 BottomAppBar(
                     Modifier
                         .fillMaxHeight()
@@ -94,10 +85,18 @@ fun EcoNavbar(
 
                             // --== Opção de amigos
                             EcoNavbarItem(
-                                Icons.Default.Group, "Amigos",
+                                Icons.Default.Add, "Analise",
                                 tela.value?.id == EcoFragmentsNavigation.Analysis,
 
                                 ) { viewModel.verAnalysis() }
+
+
+                            // --== Opção de amigos
+                            EcoNavbarItem(
+                                Icons.Default.Add, "Postagem",
+                                tela.value?.id == EcoFragmentsNavigation.Postagem,
+
+                                ) { viewModel.verPostagem() }
 
 
                             // --== Opção de configurações
@@ -139,8 +138,10 @@ fun EcoNavbarItem(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            EcoTypography(text!!, color = if (active == true) theme.colors.cinza12 else theme.colors.cinza16,
-                weight = if (active == true) FontWeight.Bold else FontWeight.Normal)
+            EcoTypography(
+                text!!, color = if (active == true) theme.colors.cinza12 else theme.colors.cinza16,
+                weight = if (active == true) FontWeight.Bold else FontWeight.Normal
+            )
 
             icon?.let {
                 Icon(

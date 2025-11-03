@@ -3,6 +3,7 @@ package com.example.ecoinspira.viewmodel.eco_fragment
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.ecoinspira.config.screen.EcoFragmentConfig
 import com.example.ecoinspira.config.screen.EcoFragmentSliderView
 import com.example.ecoinspira.config.screen.EcoNavbarSliderView
@@ -13,6 +14,9 @@ import com.example.ecoinspira.config.screen.friendsFragmentConfig
 import com.example.ecoinspira.config.screen.loginFragmentConfig
 import com.example.ecoinspira.config.screen.offsetNavbarVisivel
 import com.example.ecoinspira.config.screen.perfilFragmentConfig
+import com.example.ecoinspira.config.screen.postagemFragmentConfig
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class EcoFragmentsViewModel : ViewModel() {
@@ -41,8 +45,17 @@ class EcoFragmentsViewModel : ViewModel() {
     // --== Manipulador da tela (Fragmento) de analise de imagens
     val analysisFragmentView = MutableLiveData(EcoFragmentSliderView())
 
+    // --== Manipulador da tela (Fragmento) de Postagem
+    val postagemFragmentView = MutableLiveData(EcoFragmentSliderView())
+
     // --== Manipulador da tela (Fragmento) de Testes
     val testeFragmentView = MutableLiveData(EcoFragmentSliderView())
+
+    // --== Manipulador da tela (Fragmento) de carregamento
+    val carregamentoFragmentView = MutableLiveData(EcoFragmentSliderView())
+
+    // --== Alterando visibilidade
+    val isCarregamentoVisible = MutableLiveData(false)
 
     val escopoDeVisualizacao = MutableLiveData(EcoFragmentsNavigationScope.Login)
 
@@ -56,6 +69,7 @@ class EcoFragmentsViewModel : ViewModel() {
         EcoFragmentsNavigation.Perfil to perfilFragmentView,
         EcoFragmentsNavigation.Config to configFragmentView,
         EcoFragmentsNavigation.Analysis to analysisFragmentView,
+        EcoFragmentsNavigation.Postagem to postagemFragmentView,
     )
 
     fun verLogin() {
@@ -75,7 +89,6 @@ class EcoFragmentsViewModel : ViewModel() {
         abrirNavbar()
         alterarEscopoDeVisualizacao(EcoFragmentsNavigationScope.Main)
         fecharTodosEAbrir(EcoFragmentsNavigation.Perfil)
-        marcarComoAnterior(EcoFragmentsNavigation.Login)
     }
 
     fun verConfig(){
@@ -88,7 +101,54 @@ class EcoFragmentsViewModel : ViewModel() {
         fecharTodosEAbrir(EcoFragmentsNavigation.Analysis)
     }
 
+    fun verPostagem(){
+        fecharNavbar()
+        fecharTodosEAbrir(EcoFragmentsNavigation.Postagem)
+    }
 
+
+    fun iniciarCarregamento(title: String, desc: String, onCancel:(() -> Unit)? = null) {
+
+        // --== Inserindo o titúlo e descrição
+        carregamentoFragmentView.value?.atualizar(title, desc, onCancel)
+
+        // --== Trazendo tela de carregamento
+        carregamentoFragmentView.value?.trazer()
+
+        viewModelScope.launch {
+            delay(500)
+
+            // --== Mostrando carregamento
+            isCarregamentoVisible.value = true
+        }
+    }
+
+    fun pararCarregamento() {
+
+        // --== Trazendo tela de carregamento
+        carregamentoFragmentView.value?.passar()
+
+        viewModelScope.launch {
+            delay(500)
+
+            // --== Mostrando carregamento
+            isCarregamentoVisible.value = false
+        }
+    }
+
+
+    private fun fecharTodos() {
+
+        // --== Mapeando e alterando visibilidade
+        refFragmentViewMap.map { (_, fragmentControllerView) ->
+            fragmentControllerView.value?.let { fragment ->
+
+                // --== Caso esteja visível, então fechar
+                if (fragment.estaVisivel)
+                    fragmentControllerView.value?.passar()
+            }
+        }
+    }
 
     private fun fecharTodosEAbrir(abrir: EcoFragmentsNavigation) {
         // --== Atualizando referência
@@ -109,6 +169,7 @@ class EcoFragmentsViewModel : ViewModel() {
         }
     }
 
+
     private fun dadosDaTela(tela: EcoFragmentsNavigation): EcoFragmentConfig {
         return when (tela) {
 
@@ -118,6 +179,7 @@ class EcoFragmentsViewModel : ViewModel() {
             EcoFragmentsNavigation.Perfil -> perfilFragmentConfig
             EcoFragmentsNavigation.Config -> configFragmentConfig
             EcoFragmentsNavigation.Analysis -> friendsFragmentConfig
+            EcoFragmentsNavigation.Postagem -> postagemFragmentConfig
 
 
             else -> loginFragmentConfig
@@ -148,7 +210,7 @@ class EcoFragmentsViewModel : ViewModel() {
 
 
 enum class EcoFragmentsNavigation {
-    Login, Cadastro, Testes, Feed, Perfil, Config, Analysis
+    Login, Cadastro, Testes, Feed, Perfil, Config, Analysis, Postagem
 }
 
 enum class EcoFragmentsNavigationScope {
